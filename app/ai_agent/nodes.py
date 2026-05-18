@@ -2,8 +2,8 @@ from collections.abc import Callable
 
 from langchain_core.messages import AIMessage
 
-from app.langgraph_agent.prompts import DEFAULT_SYSTEM_PROMPT
-from app.langgraph_agent.state import AgentState
+from app.ai_agent.prompts import DEFAULT_SYSTEM_PROMPT
+from app.ai_agent.state import AgentState
 
 
 def create_call_model_node(llm) -> Callable[[AgentState], dict]:

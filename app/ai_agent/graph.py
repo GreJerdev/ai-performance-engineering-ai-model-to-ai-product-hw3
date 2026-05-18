@@ -1,7 +1,7 @@
 from langgraph.graph import END, START, StateGraph
 
-from app.langgraph_agent.nodes import create_call_model_node
-from app.langgraph_agent.state import AgentState
+from app.ai_agent.nodes import create_call_model_node
+from app.ai_agent.state import AgentState
 
 
 def build_graph(llm):

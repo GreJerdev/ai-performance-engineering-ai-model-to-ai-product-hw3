@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage
 
-from app.langgraph_agent.graph import build_graph
+from app.ai_agent.graph import build_graph
 
 
 class LangGraphAgent:
