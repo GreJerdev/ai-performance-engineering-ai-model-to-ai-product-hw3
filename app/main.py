@@ -1,4 +1,4 @@
-from data_layer.bitext_data_layer import BitextDataLayer
+from app.data_layer.bitext_data_layer import BitextDataLayer
 
 
 def main():
