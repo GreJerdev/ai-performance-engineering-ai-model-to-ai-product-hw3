@@ -1,17 +1,17 @@
 # LangGraph
-langgraph>=1.2.0
-langgraph-checkpoint>=4.0.0
+langgraph==1.2.0
+langgraph-checkpoint==4.1.0
 
 # LangChain (LLMs, tools, and integrations used with LangGraph)
-langchain>=1.3.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-langchain-openai>=1.2.0
+langchain==1.3.1
+langchain-core==1.4.0
+langchain-community==0.4.1
+langchain-openai==1.2.1
 
 # Data
-pandas>=2.0.0
-fsspec>=2024.0.0
-huggingface_hub>=0.24.0
+pandas==3.0.3
+fsspec==2026.4.0
+huggingface_hub==1.15.0
 
 # API keys and config
-python-dotenv>=1.0.0
+python-dotenv==1.2.2

@@ -1,5 +1,13 @@
 import os
+from enum import Enum
+
 import pandas as pd
+
+
+class BitextStatField(Enum):
+    FLAGS = "flags"
+    CATEGORY = "category"
+    INTENT = "intent"
 
 
 class BitextDataLayer:
@@ -26,3 +34,21 @@ class BitextDataLayer:
 
     def get_data_by_question(self, question: str) -> pd.DataFrame:
         return self.df[self.df["question"] == question]
+
+    def get_unique_values_stats(self, field: BitextStatField) -> pd.DataFrame:
+        column = field.value
+        if column not in self.df.columns:
+            raise ValueError(f"Column '{column}' not found in dataset")
+
+        counts = self.df[column].value_counts(dropna=False)
+        total = len(self.df)
+
+        return pd.DataFrame(
+            {
+                "value": counts.index.astype(str),
+                "count": counts.values,
+                "percentage": (counts.values / total * 100).round(2),
+            }
+        ).reset_index(drop=True)
+
+    
