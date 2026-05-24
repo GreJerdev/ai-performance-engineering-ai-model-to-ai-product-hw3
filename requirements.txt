@@ -13,5 +13,10 @@ pandas==3.0.3
 fsspec==2026.4.0
 huggingface_hub==1.15.0
 
+# Embeddings & vector search (app/data_layer/embeddeing.py)
+langchain-huggingface==1.2.2
+faiss-cpu==1.14.2
+sentence-transformers==5.5.1
+
 # API keys and config
 python-dotenv==1.2.2
