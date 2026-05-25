@@ -1,8 +1,10 @@
 from app.data_layer.bitext_data_layer import BitextDataLayer
 from app.llms.llm_factory import LLMFactory
 from app.ai_agent.agent import LangGraphAgent
+from langgraph.checkpoint.sqlite import SqliteSaver
 from app.llms.llm_factory import Models
 from dotenv import load_dotenv
+
 
 def main():
     load_dotenv()
@@ -10,14 +12,18 @@ def main():
     data_layer.get_data()
     #llm = LLMFactory.get_llm(Models.GPT_OSS_120B)
     llm = LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI)
-    agent = LangGraphAgent(llm)
-    #response = agent.invoke("Show me 3 examples from the SHIPPING intent.")
-    response = agent.invoke("How do customer service representatives typically respond to cancellation requests?")
-    #response = agent.invoke("Summarize the FEEDBACK category.")
-    #response = agent.invoke("Show me 3 examples from the REFUND category")
+    with SqliteSaver.from_conn_string("checkpoints.sqlite") as cp:
+        agent = LangGraphAgent(llm, cp)
+        #response = agent.invoke("Show me 3 examples from the SHIPPING intent.")
+        config = {"configurable": {"thread_id": "session-1"}}
+        response = agent.invoke("How do customer service representatives typically respond to cancellation requests?", config)
+        print(response)
+        response = agent.invoke("Same for order questions?", config)
+        #response = agent.invoke("Summarize the FEEDBACK category.")
+        #response = agent.invoke("Show me 3 examples from the REFUND category")
 
-    #response = agent.invoke("Write me a poem about customer service.")
-    print(response)
+        #response = agent.invoke("Write me a poem about customer service.")
+        print(response)
 
 
 if __name__ == "__main__":

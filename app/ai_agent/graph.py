@@ -5,7 +5,7 @@ from app.ai_agent.state import AgentState
 
 
 
-def build_graph(llm):
+def build_graph(llm, checkpointer):
     graph = StateGraph(AgentState)
     graph.add_node("enter_node", enter_node)
     graph.add_node("structured_query_node",
@@ -30,4 +30,4 @@ def build_graph(llm):
     graph.add_edge("unstructured_query_node", END)
     graph.add_edge("out_of_scope_query_node", END)
     graph.add_edge("max_iterations", END)
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)
