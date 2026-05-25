@@ -46,8 +46,10 @@ def _invoke_with_tools(llm, messages: list, max_iterations: int = 5) -> AIMessag
     return response
 
 def enter_node(state: AgentState) -> dict:
+    print("------------------Enter node------------------")
     last_message = state["messages"][-1]
-    print(last_message)
+    print(f"Last message: {last_message}")
+    print("------------------Enter node------------------")
         # Use ChatOpenAI's invoke with tools, system prompt, etc
         # The input for ChatOpenAI should be a list of messages
        
@@ -64,8 +66,12 @@ def route_query_node(llm) -> Callable[[AgentState], dict]:
     Returns: dict with a 'route' key whose value is a string node name.
     """
     def route(state: AgentState) -> dict:
-        last_message = state["messages"][-1]
-        router_prompt_filled = ROUTER_PROMPT.replace("%%%query%%%", last_message.content)
+        print("------------------Route node------------------")
+        message = state["messages"][-1]
+        last_message = message.content[-1]["text"]
+        print(f"Last message: {last_message}")
+        print("------------------Route node------------------")
+        router_prompt_filled = ROUTER_PROMPT.replace("%%%query%%%", last_message)
         llm.bind_tools(BITEXT_TOOLS)
         response = llm.invoke(
             [
@@ -89,7 +95,10 @@ def structured_query_node(llm) -> Callable[[AgentState], dict]:
     def structured_execution(state: AgentState) -> dict:
         # Use llm and tools from bitext_tools.py to get query results
         last_message = state["messages"][-1]
-        
+        print("------------------Structured query node------------------")
+        print(f"Last message: {last_message}")
+        print("------------------Structured query node------------------")
+
         response = _invoke_with_tools(
             llm, [last_message ],
         )
@@ -146,6 +155,9 @@ def plan_execution_node(llm) -> Callable[[AgentState], dict]:
     def plan_execution(state: AgentState) -> dict:
         messages = state["messages"]
         iterations_number = state["iterations_number"]
+        print("------------------Plan execution node------------------")
+        print(f"Last message: {messages[-1]}")
+        print("------------------Plan execution node------------------")
         last_message = messages[-1]
         for tool_call in last_message.tool_calls:
             tool = TOOLS_BY_NAME[tool_call["name"]]

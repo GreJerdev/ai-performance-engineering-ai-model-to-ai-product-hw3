@@ -100,4 +100,14 @@ class BitextDataLayer:
             self.df["intent"].str.lower().isin([intent.lower() for intent in search_items.intent])
             if search_items.intent else True
         )
-        return self.df[instruction_filter & response_filter & category_filter & flags_filter & intent_filter ]
+        print("--------------------------------")
+        print(f"Search items: {search_items}")
+        print(f"Instruction filter: {instruction_filter}")
+        print(f"Response filter: {response_filter}")
+        print(f"Category filter: {category_filter}")
+        print(f"Flags filter: {flags_filter}")
+        print(f"Intent filter: {intent_filter}")
+        print(f"Skip from start: {search_items.skip_from_start}")
+        print(f"Row limit: {search_items.row_limit}")
+        print("--------------------------------")
+        return self.df[instruction_filter & response_filter & category_filter & flags_filter & intent_filter ].iloc[search_items.skip_from_start:search_items.skip_from_start + search_items.row_limit]

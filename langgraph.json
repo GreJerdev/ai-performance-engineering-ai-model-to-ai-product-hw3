@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "bitext_agent": "./app/ai_agent/agent.py:graph"
+  },
+  "env": ".env"
+}

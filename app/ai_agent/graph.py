@@ -5,7 +5,7 @@ from app.ai_agent.state import AgentState
 
 
 
-def build_graph(llm, checkpointer):
+def build_graph(llm, checkpointer=None):
     graph = StateGraph(AgentState)
     graph.add_node("enter_node", enter_node)
     graph.add_node("structured_query_node",

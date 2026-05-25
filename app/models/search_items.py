@@ -1,4 +1,16 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+_LIST_FIELDS = ("flags", "instruction", "category", "intent", "response")
+
+
+def _coerce_to_str_list(value: object) -> list[str] | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return value
+    raise TypeError(f"Expected str or list[str], got {type(value).__name__}")
 
 
 class SearchItems(BaseModel):
@@ -25,6 +37,16 @@ class SearchItems(BaseModel):
     row_limit: int = Field(
         default=5,
         ge=1,
-        le=100,
+        le=1000,
         description="Maximum number of matching records to return (default 5).",
     )
+    skip_from_start: int = Field(
+        default=0,
+        ge=0,
+        description="Number of rows to skip from the start of the dataset (default 0).",
+    )
+
+    @field_validator(*_LIST_FIELDS, mode="before")
+    @classmethod
+    def coerce_list_fields(cls, value: object) -> list[str] | None:
+        return _coerce_to_str_list(value)

@@ -93,6 +93,7 @@ def create_bitext_tools(data_layer: BitextDataLayer) -> list:
         intent: list[str] | None = None,
         response: list[str] | None = None,
         row_limit: int = 5,
+        skip_from_start: int = 0,
     ) -> str:
         """Multi-field filtered search via BitextDataLayer.search_instruction_and_response_with_schema.
 
@@ -105,6 +106,7 @@ def create_bitext_tools(data_layer: BitextDataLayer) -> list:
             intent: Exact intents; row must match one of these values.
             response: Keywords; row matches if response contains any (case-insensitive).
             row_limit: Max rows to return (default 5).
+            skip_from_start: Number of rows to skip from the start of the dataset (default 0).
 
         Returns:
             JSON string of matching records, or an error message if none match.
@@ -116,6 +118,7 @@ def create_bitext_tools(data_layer: BitextDataLayer) -> list:
             intent=intent,
             response=response,
             row_limit=row_limit,
+            skip_from_start=skip_from_start,
         )
         result = data_layer.search_instruction_and_response_with_schema(search_items)
         if result.empty:
