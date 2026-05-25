@@ -15,7 +15,7 @@ def main():
     with SqliteSaver.from_conn_string("checkpoints.sqlite") as cp:
         agent = LangGraphAgent(llm, cp)
         #response = agent.invoke("Show me 3 examples from the SHIPPING intent.")
-        config = {"configurable": {"thread_id": "session-1"}}
+        config = {"configurable": {"thread_id": "session-2"}}
         response = agent.invoke("How do customer service representatives typically respond to cancellation requests?", config)
         print(response)
         response = agent.invoke("Same for order questions?", config)
