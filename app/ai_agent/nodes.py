@@ -129,13 +129,18 @@ def unstructured_query_node(llm) -> Callable[[AgentState], dict]:
 def out_of_scope_query_node(llm) -> Callable[[AgentState], dict]:
     def out_of_scope_query_node(state: AgentState) -> dict:
         last_message = state["messages"][-1]
+        print("------------------Route node------------------")
+        message = state["messages"][-1]
+        last_message = message.content[-1]["text"]
+        print(f"Last message: {last_message}")
+        print("------------------Route node------------------")
         # Compose an explanation for why this query is deemed out of scope.
         explain_prompt = (
             f"You are an AI query router. "
             "A user submitted the following query:\n"
-            f"\"{last_message.content}\"\n\n"
+            f"\"{last_message}\"\n\n"
             "Using the following router instructions:\n"
-            f"{ROUTER_PROMPT.replace('%%%query%%%', last_message.content)}\n\n"
+            f"{ROUTER_PROMPT.replace('%%%query%%%', last_message)}\n\n"
             "Explain why this user query is considered out of scope for the possible categories and provide a short, clear reasoning to the user."
         )
         response = llm.invoke(

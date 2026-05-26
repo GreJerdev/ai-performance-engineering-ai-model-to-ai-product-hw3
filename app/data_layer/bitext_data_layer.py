@@ -77,29 +77,31 @@ class BitextDataLayer:
     
     def search_instruction_and_response_with_schema(self, search_items: SearchItems) -> pd.DataFrame:
         
+        all_true = pd.Series(True, index=self.df.index)
         instruction_filter = (
             self.df["instruction"].str.contains("|".join(search_items.instruction), case=False, na=False)
-            if search_items.instruction else True
+            if search_items.instruction else all_true
         )
         response_filter = (
             self.df["response"].str.contains("|".join(search_items.response), case=False, na=False)
-            if search_items.response else True
+            if search_items.response else all_true
         )
         # Case-insensitive category comparison
         category_filter = (
             self.df["category"].str.lower().isin([cat.lower() for cat in search_items.category])
-            if search_items.category else True
+            if search_items.category else all_true
         )
         # Case-insensitive flags comparison
         flags_filter = (
             self.df["flags"].str.lower().isin([flag.lower() for flag in search_items.flags])
-            if search_items.flags else True
+            if search_items.flags else all_true
         )
         # Case-insensitive intent comparison
         intent_filter = (
             self.df["intent"].str.lower().isin([intent.lower() for intent in search_items.intent])
-            if search_items.intent else True
+            if search_items.intent else all_true
         )
+        search_items.row_limit = search_items.row_limit if search_items.row_limit > 0 else 500000
         print("--------------------------------")
         print(f"Search items: {search_items}")
         print(f"Instruction filter: {instruction_filter}")

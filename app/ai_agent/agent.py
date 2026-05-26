@@ -16,7 +16,7 @@ def _warmup_data() -> None:
 
 
 _warmup_data()
-_llm = LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI)
+_llm = LLMFactory.get_llm(Models.GPT_OSS_120B)# LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI)
 
 # Exported for LangGraph CLI (`langgraph dev`, Studio, deploy)
 graph = build_graph(_llm)
