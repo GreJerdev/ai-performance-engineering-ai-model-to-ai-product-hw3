@@ -1,6 +1,7 @@
 import os
 from enum import Enum
-from langchain_openai import ChatOpenAI 
+from langchain_openai import ChatOpenAI
+
 
 class Models(Enum):
     DEEPSEEK_AI_V4_PRO = "deepseek-ai/DeepSeek-V4-Pro"
@@ -13,27 +14,23 @@ class LLMSizes(Enum):
     SMALL = "small"
     MEDIUM = "medium"
     BIG = "big"
-   
-
 
 
 class LLMFactory:
+    BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
 
-    BASE_URL="https://api.tokenfactory.nebius.com/v1/"
-             
-    API_KEY=os.getenv("NEBIUS_API_KEY")
-    
+    API_KEY = os.getenv("NEBIUS_API_KEY")
+
     def __init__(self):
-       pass
-       
-
+        print("__init__",os.getenv("NEBIUS_API_KEY"))
 
     @classmethod
-    def get_llm(cls, model: Models)->ChatOpenAI:
-       if model in Models:
-        print(f"Model {model.value} supported")
-        print(cls.API_KEY[0:5] + "..." + cls.API_KEY[-5:])
-        return ChatOpenAI(model=model.value, base_url=cls.BASE_URL, api_key=cls.API_KEY)
-       else:
-        raise ValueError(f"Model {model} not supported")    
-    
+    def get_llm(cls, model: Models) -> ChatOpenAI:
+        if model in Models:
+            print(f"Model {model.value} supported")
+            print(cls.API_KEY[0:5] + "..." + cls.API_KEY[-5:])
+            return ChatOpenAI(
+                model=model.value, base_url=cls.BASE_URL, api_key=cls.API_KEY
+            )
+        else:
+            raise ValueError(f"Model {model} not supported")

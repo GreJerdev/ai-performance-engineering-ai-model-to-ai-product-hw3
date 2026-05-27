@@ -4,7 +4,23 @@ Bitext customer-support agent built with LangGraph.
 
 ## Setup
 
+From the project root:
+
 ```bash
+python -m venv .venv
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+**macOS / Linux:**
+
+```bash
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -14,6 +30,30 @@ Create a `.env` file with your Nebius API key:
 NEBIUS_API_KEY=your-key-here
 ```
 
+The first run may take a while while data and embedding models are loaded.
+
+## Run with Streamlit UI (recommended)
+
+Chat UI in the browser, backed by `LangGraphAgent` and SQLite checkpointing (`checkpoints.sqlite`).
+
+**Terminal:**
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Open the URL shown in the terminal (usually http://localhost:8501).
+
+**Cursor / VS Code:**
+
+1. Select the `.venv` interpreter (**Python: Select Interpreter**).
+2. **Run and Debug** (`Ctrl+Shift+D`).
+3. Choose **Streamlit: streamlit_app** and press **F5**.
+
+The sidebar lets you edit the **Thread ID** (for multi-turn memory) and **Clear chat** (UI history only).
+
+> Streamlit runs the agent directly. You do not need `langgraph dev` running at the same time.
+
 ## Run with LangGraph CLI
 
 Start the local dev server (LangGraph Studio UI):
@@ -22,7 +62,11 @@ Start the local dev server (LangGraph Studio UI):
 langgraph dev
 ```
 
-The graph is registered in `langgraph.json` as `bitext_agent`, exported from `app/ai_agent/agent.py:graph`.
+The graph is registered in `langgraph.json` as `bitext_agent`. For the CLI, export a compiled graph from `app/ai_agent/agent.py` (uncomment or add):
+
+```python
+graph = build_graph(get_llm())
+```
 
 Use a `thread_id` in configurable fields for multi-turn memory (the server provides checkpointing).
 
@@ -42,4 +86,4 @@ The server pauses until a debugger attaches. In Cursor/VS Code, run **Run and De
 python main.py
 ```
 
-This uses SQLite checkpointing via `start_agent()` instead of the CLI server.
+This uses SQLite checkpointing via `start_agent()` instead of the CLI server or Streamlit.

@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from app.ai_agent.prompts import DEFAULT_SYSTEM_PROMPT, MAX_ITERATIONS_PROMPT, ROUTER_PROMPT, USER_INFO_PROMPT
+from app.ai_agent.prompts import MAX_ITERATIONS_PROMPT, ROUTER_PROMPT, USER_INFO_PROMPT
 from app.ai_agent.state import AgentState
 
 from app.llms.llm_factory import LLMSizes
@@ -49,7 +49,7 @@ def _invoke_with_tools(llm, messages: list, max_iterations: int = 5) -> AIMessag
 
 def _get_last_message_text(messages:list):
     message = messages[-1]
-    last_message = message.content[-1]
+    last_message = message.content
     if "text" in last_message:
         last_message = last_message["text"]
     return last_message
