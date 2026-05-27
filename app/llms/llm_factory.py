@@ -9,6 +9,14 @@ class Models(Enum):
     NEMOTRON_3_NANO_OMNI = "nvidia/Nemotron-3-Nano-Omni"
 
 
+class LLMSizes(Enum):
+    SMALL = "small"
+    MEDIUM = "medium"
+    BIG = "big"
+   
+
+
+
 class LLMFactory:
 
     BASE_URL="https://api.tokenfactory.nebius.com/v1/"

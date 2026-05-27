@@ -5,7 +5,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 
 from app.ai_agent.graph import build_graph
 from app.data_layer.bitext_data_layer import BitextDataLayer
-from app.llms.llm_factory import LLMFactory, Models
+from app.llms.llm_factory import LLMFactory, LLMSizes, Models
 
 load_dotenv()
 
@@ -16,7 +16,14 @@ def _warmup_data() -> None:
 
 
 _warmup_data()
-_llm = LLMFactory.get_llm(Models.GPT_OSS_120B)# LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI)
+_llm = {
+    LLMSizes.SMALL:LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI),
+    LLMSizes.MEDIUM:LLMFactory.get_llm(Models.GPT_OSS_120B),
+    LLMSizes.BIG:LLMFactory.get_llm(Models.DEEPSEEK_AI_V4_PRO)
+}
+
+
+#_llm = LLMFactory.get_llm(Models.GPT_OSS_120B)# LLMFactory.get_llm(Models.NEMOTRON_3_NANO_OMNI)
 
 # Exported for LangGraph CLI (`langgraph dev`, Studio, deploy)
 graph = build_graph(_llm)
@@ -44,10 +51,10 @@ def start_agent():
     """Run a short scripted demo with SQLite checkpointing (non-CLI)."""
     with SqliteSaver.from_conn_string("checkpoints.sqlite") as cp:
         agent = LangGraphAgent(_llm, cp)
-        # config = {"configurable": {"thread_id": "session-2"}}
-        # print(agent.invoke(
-        #    "How do customer service representatives typically respond to cancellation requests?",
-        #    config,
-        # ))
-        # print(agent.invoke("Same for order questions?", config))
+        config = {"configurable": {"thread_id": "session-2"}}
+        print(agent.invoke(
+            "How do customer service representatives typically respond to cancellation requests?",
+            config,
+         ))
+        print(agent.invoke("Same for order questions?", config))
     return agent

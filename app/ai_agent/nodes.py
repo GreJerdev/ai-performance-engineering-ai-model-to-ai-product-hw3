@@ -5,6 +5,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from app.ai_agent.prompts import DEFAULT_SYSTEM_PROMPT, MAX_ITERATIONS_PROMPT, ROUTER_PROMPT
 from app.ai_agent.state import AgentState
 
+from app.llms.llm_factory import LLMSizes
 from app.tools.bitext_tools import create_bitext_tools
 from app.data_layer.bitext_data_layer import BitextDataLayer
 
@@ -45,6 +46,14 @@ def _invoke_with_tools(llm, messages: list, max_iterations: int = 5) -> AIMessag
 
     return response
 
+
+def _get_last_message_text(messages:list):
+    message = messages[-1]
+    last_message = message.content[-1]
+    if "text" in last_message:
+        last_message = last_message["text"]
+    return last_message
+
 def enter_node(state: AgentState) -> dict:
     print("------------------Enter node------------------")
     last_message = state["messages"][-1]
@@ -54,6 +63,15 @@ def enter_node(state: AgentState) -> dict:
         # The input for ChatOpenAI should be a list of messages
        
     return state
+
+
+def user_info_node(llm) -> Callable[[AgentState], dict]:
+    def user_info_collect(state: AgentState) -> dict:
+        messages = state["messages"]
+        
+        return messages
+    return user_info_node
+
 
 
 def route_query_node(llm) -> Callable[[AgentState], dict]:
@@ -67,13 +85,15 @@ def route_query_node(llm) -> Callable[[AgentState], dict]:
     """
     def route(state: AgentState) -> dict:
         print("------------------Route node------------------")
-        message = state["messages"][-1]
-        last_message = message.content[-1]["text"]
+        #message = state["messages"][-1]
+        #last_message = message.content[-1]["text"]
+        last_message = _get_last_message_text(state["messages"])
         print(f"Last message: {last_message}")
         print("------------------Route node------------------")
         router_prompt_filled = ROUTER_PROMPT.replace("%%%query%%%", last_message)
-        llm.bind_tools(BITEXT_TOOLS)
-        response = llm.invoke(
+        _llm = llm[LLMSizes.MEDIUM]
+        _llm.bind_tools(BITEXT_TOOLS)
+        response = _llm.invoke(
             [
                 {"role": "system", "content": "You are a helpful AI query router."},
                 {"role": "user", "content": router_prompt_filled},
@@ -100,7 +120,7 @@ def structured_query_node(llm) -> Callable[[AgentState], dict]:
         print("------------------Structured query node------------------")
 
         response = _invoke_with_tools(
-            llm, [last_message ],
+            llm[LLMSizes.BIG], [last_message ],
         )
 
         return {"messages": [response if isinstance(response, AIMessage) else AIMessage(content=str(response))]}
@@ -108,21 +128,7 @@ def structured_query_node(llm) -> Callable[[AgentState], dict]:
 
 def unstructured_query_node(llm) -> Callable[[AgentState], dict]:
     def plan_execution(state: AgentState) -> dict:
-        messages = state["messages"]
         iterations_number = 0
-        # last_message = messages[-1]
-        # for tool_call in last_message.tool_calls:
-        #     tool = TOOLS_BY_NAME[tool_call["name"]]
-        #     tool_result = tool.invoke(tool_call["args"])
-        #     messages.append(
-        #         ToolMessage(
-        #             content=str(tool_result),
-        #             tool_call_id=tool_call["id"],
-        #         )
-        #     )
-        # print("--------------plan_execution--------------")    
-        # print(f"Use tool for {tool_call['name']} with args {tool_call['args']}")    
-        # print("++++++++++++++plan_execution++++++++++++++++++")
         return {"iterations_number":iterations_number}
     return plan_execution
 
@@ -130,8 +136,9 @@ def out_of_scope_query_node(llm) -> Callable[[AgentState], dict]:
     def out_of_scope_query_node(state: AgentState) -> dict:
         last_message = state["messages"][-1]
         print("------------------Route node------------------")
-        message = state["messages"][-1]
-        last_message = message.content[-1]["text"]
+        #message = state["messages"][-1]
+        #last_message = message.content[-1]["text"]
+        last_message = _get_last_message_text(state["messages"])
         print(f"Last message: {last_message}")
         print("------------------Route node------------------")
         # Compose an explanation for why this query is deemed out of scope.
@@ -143,7 +150,7 @@ def out_of_scope_query_node(llm) -> Callable[[AgentState], dict]:
             f"{ROUTER_PROMPT.replace('%%%query%%%', last_message)}\n\n"
             "Explain why this user query is considered out of scope for the possible categories and provide a short, clear reasoning to the user."
         )
-        response = llm.invoke(
+        response = llm[LLMSizes.MEDIUM].invoke(
             [
                 {
                     "role": "system",
@@ -183,7 +190,7 @@ def plan_thinking_node(llm) -> Callable[[AgentState], dict]:
     def plan_thinking(state: AgentState) -> dict:
         # The LLM reasons about the state and can output a tool call
         prompt = "You must think step-by-step before answering. Use tools if necessary."
-        response = llm.bind_tools(BITEXT_TOOLS).invoke([HumanMessage(content=prompt)] + state["messages"])
+        response = llm[LLMSizes.BIG].bind_tools(BITEXT_TOOLS).invoke([HumanMessage(content=prompt)] + state["messages"])
         return {"messages": [response if isinstance(response, AIMessage) else AIMessage(content=str(response))]}
     return plan_thinking
 
@@ -209,7 +216,7 @@ def messages_to_text(messages):
 def max_iterations_node(llm) -> Callable[[AgentState], dict]:
     def max_iterations(state: AgentState) -> dict:
         final_messages =[ SystemMessage(content=MAX_ITERATIONS_PROMPT), *state["messages"]]
-        response = llm.invoke(final_messages)
+        response = llm[LLMSizes.BIG].invoke(final_messages)
         return {"messages": [response if isinstance(response, AIMessage) else AIMessage(content=str(response))]}
     
     return max_iterations
