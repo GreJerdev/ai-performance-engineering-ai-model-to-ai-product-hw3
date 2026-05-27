@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from app.ai_agent.prompts import DEFAULT_SYSTEM_PROMPT, MAX_ITERATIONS_PROMPT, ROUTER_PROMPT
+from app.ai_agent.prompts import DEFAULT_SYSTEM_PROMPT, MAX_ITERATIONS_PROMPT, ROUTER_PROMPT, USER_INFO_PROMPT
 from app.ai_agent.state import AgentState
 
 from app.llms.llm_factory import LLMSizes
@@ -69,10 +69,22 @@ def user_info_node(llm) -> Callable[[AgentState], dict]:
     def user_info_collect(state: AgentState) -> dict:
         messages = state["messages"]
         
-        return messages
-    return user_info_node
-
-
+        _last_message_text = _get_last_message_text(messages)
+        _llm = llm[LLMSizes.MEDIUM]
+        response = _llm.invoke(
+            [
+                {"role": "system", "content":USER_INFO_PROMPT},
+                {"role": "user", "content": _last_message_text},
+            ]
+            # No tools required for routing
+        )
+        text = response.content if hasattr(response, "content") else str(response)
+        if not text == "":
+            return {"user_profile": [text if isinstance(text, HumanMessage) else HumanMessage(content=str(text))]}
+        else:
+            return {}
+        
+    return user_info_collect
 
 def route_query_node(llm) -> Callable[[AgentState], dict]:
     """
@@ -120,7 +132,7 @@ def structured_query_node(llm) -> Callable[[AgentState], dict]:
         print("------------------Structured query node------------------")
 
         response = _invoke_with_tools(
-            llm[LLMSizes.BIG], [last_message ],
+            llm[LLMSizes.BIG], [last_message ] + state["user_profile"],
         )
 
         return {"messages": [response if isinstance(response, AIMessage) else AIMessage(content=str(response))]}
@@ -190,7 +202,7 @@ def plan_thinking_node(llm) -> Callable[[AgentState], dict]:
     def plan_thinking(state: AgentState) -> dict:
         # The LLM reasons about the state and can output a tool call
         prompt = "You must think step-by-step before answering. Use tools if necessary."
-        response = llm[LLMSizes.BIG].bind_tools(BITEXT_TOOLS).invoke([HumanMessage(content=prompt)] + state["messages"])
+        response = llm[LLMSizes.BIG].bind_tools(BITEXT_TOOLS).invoke([HumanMessage(content=prompt)] + state["messages"] + state["user_profile"])
         return {"messages": [response if isinstance(response, AIMessage) else AIMessage(content=str(response))]}
     return plan_thinking
 

@@ -1,5 +1,5 @@
 from langgraph.graph import END, START, StateGraph
-from app.ai_agent.nodes import end_node, max_iterations_node, plan_execution_node, plan_thinking_node, route_query_node, structured_query_node, think_router_node, unstructured_query_node, out_of_scope_query_node,enter_node
+from app.ai_agent.nodes import end_node, max_iterations_node, plan_execution_node, plan_thinking_node, route_query_node, structured_query_node, think_router_node, unstructured_query_node, out_of_scope_query_node,enter_node, user_info_node
 from app.ai_agent.state import AgentState
 
 
@@ -8,6 +8,7 @@ from app.ai_agent.state import AgentState
 def build_graph(llm, checkpointer=None):
     graph = StateGraph(AgentState)
     graph.add_node("enter_node", enter_node)
+    graph.add_node("user_info_node", user_info_node(llm))
     graph.add_node("structured_query_node",
                    structured_query_node(llm))
     graph.add_node("unstructured_query_node",
@@ -24,7 +25,8 @@ def build_graph(llm, checkpointer=None):
     graph.add_conditional_edges("plan_thinking", think_router_node(llm))
     graph.add_edge("plan_execution", "plan_thinking")
 
-    graph.add_edge(START, "enter_node")
+    graph.add_edge(START, "user_info_node")
+    graph.add_edge("user_info_node", "enter_node")
     graph.add_conditional_edges("enter_node", route_query_node(llm))
     graph.add_edge("structured_query_node", END)
     graph.add_edge("unstructured_query_node", END)
