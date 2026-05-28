@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import uuid
 
@@ -11,13 +12,18 @@ load_dotenv()
 
 CHECKPOINT_DB = "checkpoints.sqlite"
 
+AGENT = None
 
 @st.cache_resource
 def get_agent() -> LangGraphAgent:
-    """Create one shared agent instance for the Streamlit process."""
-    conn = sqlite3.connect(CHECKPOINT_DB, check_same_thread=False)
-    checkpointer = SqliteSaver(conn)
-    return LangGraphAgent(get_llm(), checkpointer=checkpointer)
+    global AGENT
+    if not AGENT:
+        """Create one shared agent instance for the Streamlit process."""
+        conn = sqlite3.connect(CHECKPOINT_DB, check_same_thread=False)
+        checkpointer = SqliteSaver(conn)
+        AGENT = LangGraphAgent(get_llm(), checkpointer=checkpointer)
+
+    return AGENT
 
 
 def _response_to_text(response: object) -> str:
@@ -62,7 +68,9 @@ def main() -> None:
         with st.spinner("Thinking..."):
             try:
                 agent = get_agent()
+                
                 config = {"configurable": {"thread_id": st.session_state.thread_id}}
+
                 answer = _response_to_text(agent.invoke(prompt, config=config))
             except Exception as exc:  # noqa: BLE001
                 answer = f"Error: {exc}"
